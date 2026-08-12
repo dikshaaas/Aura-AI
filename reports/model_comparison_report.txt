@@ -1,0 +1,24 @@
+MODEL COMPARISON REPORT
+==================================================
+Metric          | Optimized SVM   | Random Forest  
+--------------------------------------------------
+Accuracy        | 42.86         % | 33.14         %
+Precision       | 0.0429          | 0.1531         
+Recall          | 0.1000          | 0.1717         
+F1-score        | 0.0600          | 0.1596         
+==================================================
+
+Best SVM Parameters: {'C': 1, 'gamma': 0.1, 'kernel': 'rbf'}
+Best RF Parameters: {'class_weight': 'balanced', 'max_depth': 20, 'n_estimators': 200}
+Selected Best Model: Optimized SVM
+
+Commonly Confused Accent Pairs (count >= 2):
+ - Chinese English misclassified as American English: 22 occurrences
+ - Arabic English misclassified as American English: 20 occurrences
+ - British English misclassified as American English: 13 occurrences
+ - Indian English misclassified as American English: 12 occurrences
+ - Russian English misclassified as American English: 10 occurrences
+ - Canadian English misclassified as American English: 9 occurrences
+ - Australian English misclassified as American English: 6 occurrences
+ - Japanese English misclassified as American English: 5 occurrences
+ - Nepali English misclassified as American English: 3 occurrences

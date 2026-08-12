@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Accent Detector - Deep Audio Analysis</title>
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet font">
+    <!-- FontAwesome for sleek icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Link to custom stylesheets -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="glass-bg-glow"></div>
+    <div class="glass-bg-glow secondary"></div>
+
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo">
+                <span class="pulse-ring"><i class="fa-solid fa-microphone-lines"></i></span>
+                <h1>AURA<span>.AI</span></h1>
+            </div>
+            <p class="subtitle font-gradient">Deep Acoustic Accent Recognition</p>
+        </header>
+
+        <main class="app-grid">
+            <!-- Left Panel: Control center (Recording and Upload) -->
+            <section class="control-panel glass-card">
+                <div class="tab-headers">
+                    <button class="tab-btn active" id="btn-tab-record" onclick="switchTab('record')">
+                        <i class="fa-solid fa-microphone-lines"></i> Live Record
+                    </button>
+                    <button class="tab-btn" id="btn-tab-upload" onclick="switchTab('upload')">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Upload Audio
+                    </button>
+                </div>
+
+                <div class="tab-content active" id="tab-record">
+                    <div class="passage-selector-group">
+                        <div class="label-row">
+                            <span class="section-label">Reading Passage Choice</span>
+                            <button id="btn-random-passage" class="action-btn-sm" onclick="selectRandomPassage()">
+                                <i class="fa-solid fa-shuffle"></i> Random Passage
+                            </button>
+                        </div>
+                        <select id="passage-select" onchange="onPassageChange()">
+                            <option value="">Loading passages...</option>
+                        </select>
+                        <div class="passage-box" id="passage-display">
+                            <!-- Passage text goes here -->
+                        </div>
+                    </div>
+
+                    <div class="record-workflow">
+                        <!-- Waveform visualization -->
+                        <div class="visualizer-container">
+                            <canvas id="waveform-canvas"></canvas>
+                            <div class="visualizer-overlay" id="visualizer-idle-text">
+                                <i class="fa-solid fa-wave-square"></i> Waveform idle
+                            </div>
+                            <div class="timing-badge" id="record-timer" style="display: none;">00:00</div>
+                        </div>
+
+                        <div class="record-controls-row">
+                            <!-- Record buttons -->
+                            <button id="btn-record-main" class="record-btn" onclick="toggleRecording()">
+                                <span class="record-icon-container">
+                                    <i class="fa-solid fa-microphone" id="main-record-btn-icon"></i>
+                                </span>
+                            </button>
+                            <p class="control-tip" id="record-status-text">Click the microphone to start reading</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tab-content" id="tab-upload">
+                    <div class="drag-drop-zone" id="drop-zone">
+                        <i class="fa-solid fa-cloud-arrow-up cloud-icon"></i>
+                        <h3>Drag & drop audio file here</h3>
+                        <p class="drop-formats">Supports .wav, .mp3, .m4a</p>
+                        <span class="browse-btn">Or browse file</span>
+                        <input type="file" id="audio-file-input" accept=".wav,.mp3,.m4a" style="display: none;" onchange="handleFileSelect(event)">
+                    </div>
+
+                    <div class="selected-file-details" id="file-details-container" style="display: none;">
+                        <div class="file-info-row">
+                            <i class="fa-solid fa-file-audio file-type-icon"></i>
+                            <div class="file-meta">
+                                <span class="file-name" id="selected-file-name">audio_sample.wav</span>
+                                <span class="file-size" id="selected-file-size">1.2 MB</span>
+                            </div>
+                            <button class="remove-file-btn" onclick="clearSelectedFile()"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <button class="submit-btn" id="btn-predict-upload" onclick="uploadAndPredict()">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Analyze Audio Accent
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Results and Diagnostics -->
+            <section class="diagnostic-panel">
+                <!-- Result Card -->
+                <div class="result-card glass-card empty" id="result-box">
+                    <div class="empty-state" id="result-empty-state">
+                        <div class="radar-scan">
+                            <i class="fa-solid fa-circle-nodes"></i>
+                        </div>
+                        <h3>Awaiting Acoustic Signal</h3>
+                        <p>Record your voice or upload a speech file to run the AI neural classification.</p>
+                    </div>
+
+                    <div class="loader-state" id="result-loader-state" style="display: none;">
+                        <div class="glow-spinner"></div>
+                        <h3>Analyzing Speech Waves</h3>
+                        <p id="analysis-step-text">Processing MFCC features & Zero-Crossing Rates...</p>
+                    </div>
+
+                    <div class="analysis-results" id="result-content-state" style="display: none;">
+                        <h2 class="section-title">Acoustic Diagnostics</h2>
+                        
+                        <div class="primary-prediction">
+                            <div class="flag-icon" id="result-flag">🇺🇸</div>
+                            <div class="accent-details">
+                                <span class="label">Main Accent Detected</span>
+                                <h3 class="accent-title" id="result-accent">American English</h3>
+                            </div>
+                            <div class="percentage-meter">
+                                <svg class="progress-ring" width="80" height="80">
+                                    <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.05)" stroke-width="6" fill="transparent" r="32" cx="40" cy="40"/>
+                                    <circle class="progress-ring__circle" id="result-confidence-ring" stroke="var(--neon-cyan)" stroke-width="6" fill="transparent" r="32" cx="40" cy="40"/>
+                                </svg>
+                                <span class="percentage-value" id="result-confidence-text">87%</span>
+                            </div>
+                        </div>
+
+                        <!-- Alternative Possibilities distributions -->
+                        <div class="distribution-group">
+                            <span class="section-label">Probability Distribution</span>
+                            <div class="distribution-bars" id="distribution-chart-container">
+                                <!-- Bars will be dynamically injected here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Card -->
+                <div class="history-card glass-card">
+                    <div class="history-header">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <h3>Prediction History</h3>
+                        <button class="clear-history-btn" onclick="clearHistory()">Clear</button>
+                    </div>
+                    <div class="history-list" id="history-container">
+                        <!-- History table/items dynamically populated -->
+                        <div class="history-empty">No history logs recorded yet</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- JavaScript script include -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
