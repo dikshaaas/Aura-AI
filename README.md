@@ -1,52 +1,61 @@
-# AURA.AI: AI-Powered Accent Recognition System
+# AURA - AI: Speech Accent Recognition & Acoustic Analytics
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Framework-Flask-green.svg)](https://flask.palletsprojects.com/)
 [![Librosa](https://img.shields.io/badge/Audio-Librosa-orange.svg)](https://librosa.org/)
 [![scikit-learn](https://img.shields.io/badge/ML-Scikit--Learn-red.svg)](https://scikit-learn.org/)
 
-**AURA.AI** is an end-to-end Machine Learning and Audio Processing application designed to classify non-native and native English accents from speech audio. Using **Librosa** for 94-dimensional acoustic feature extraction and **Support Vector Machines (SVM)** trained on standard speech passages, AURA.AI delivers real-time accent predictions through a web interface.
+**AURA - AI** is an end-to-end Machine Learning and Acoustic Signal Processing application designed to classify speech accents from audio inputs. Utilizing **Librosa** for 94-dimensional acoustic feature extraction and a **Support Vector Machine (SVM)** classifier trained on phonetic speech passages, AURA - AI provides real-time accent prediction, probability distributions, and speech metrics through a warm, human-centric web studio.
 
 ---
 
 ## Table of Contents
 - [Key Features](#key-features)
-- [Model Performance & Accuracy Note](#model-performance--accuracy-note)
+- [Design System & UI Theme](#design-system--ui-theme)
+- [Model Performance & Dataset Note](#model-performance--dataset-note)
 - [End-to-End Workflow](#end-to-end-workflow)
 - [Project Architecture](#project-architecture)
 - [System Requirements & Dependencies](#system-requirements--dependencies)
 - [Quick Start & Setup Guide](#quick-start--setup-guide)
-- [Detailed Pipeline Explanation](#detailed-pipeline-explanation)
-  - [1. Acoustic Feature Extraction](#1-acoustic-feature-extraction)
-  - [2. Model Training & Evaluation](#2-model-training--evaluation)
-  - [3. Web Application & Inference](#3-web-application--inference)
+- [Detailed Audio Pipeline & Resiliency](#detailed-audio-pipeline--resiliency)
 - [Supported Accents](#supported-accents)
 
 ---
 
 ## Key Features
 
-- **Live Voice Recording**: Record reading passages directly in your web browser with dynamic Canvas audio waveform visualization.
-- **File Upload**: Drag-and-drop `.wav`, `.mp3`, or `.m4a` speech files for instant acoustic analysis.
-- **94-Dimensional Acoustic Profiling**: Extracts MFCCs, Delta & Delta-Delta coefficients, Zero Crossing Rate, Spectral Centroid, Spectral Contrast, Chroma STFT, and RMS Energy.
-- **Probabilistic Classification**: Displays primary accent detection with a confidence meter and full probability distribution breakdown.
-- **Passage Selector**: Built-in standard phonetic reading passages (e.g., *"Please call Stella..."*) to optimize recognition accuracy.
-- **In-Browser Session History**: Track recent predictions with local storage history logging.
+- **Live Microphone Recording**: Capture voice directly in the browser with real-time Web Audio API waveform canvas rendering.
+- **Client-Side PCM WAV Encoding**: Converts WebM/Ogg browser recording chunks into 100% standard 16-bit PCM RIFF `.wav` files before uploading.
+- **File Upload Studio**: Drag-and-drop `.wav`, `.mp3`, `.webm`, or `.m4a` speech files for acoustic analysis.
+- **Multi-Stage Safe Audio Loading**: Backend supports `librosa`, `soundfile`, `pydub`, and `ffmpeg` fallbacks to handle diverse audio encodings cleanly.
+- **94-Dimensional Feature Vector**: Extracts MFCCs, Delta & Delta-Delta coefficients, Zero Crossing Rate, Spectral Centroid, Spectral Contrast, Chroma STFT, and RMS Energy.
+- **Probabilistic Accent Metrics**: Displays primary accent prediction with an animated SVG score ring and class probability breakdown.
+- **Phonetic Passage Reader**: Built-in standard reading passages (e.g., *"Please call Stella..."*) to optimize acoustic consistency.
+- **Session Log History**: Persistent browser local storage logging for historical diagnostic comparison.
 
 ---
 
-## Model Performance & Accuracy Note
+## Design System & UI Theme
+
+AURA - AI features a bespoke, non-AI-generated **Warm Beige & Rough Moss Green** design aesthetic:
+- **Canvas & Background**: Warm organic beige (`#F5F2EB`) with cream accents (`#EFEBE3`).
+- **Accent Swatches**: Rough Dark Moss (`#2C4632`), Forest Moss (`#3A5A40`), and Sage Green (`#588157`).
+- **Typography**: Paired display fonts (*Outfit*), body sans (*Plus Jakarta Sans*), and editorial italic serif (*Instrument Serif*).
+
+---
+
+## Model Performance & Dataset Note
 
 > **Current Model Performance Notice:**
-> The current machine learning classifier achieves an overall multi-class classification accuracy of approximately **40%** across 10 accent classes.
+> The machine learning classifier achieves an overall multi-class classification accuracy of approximately **40%** across 10 accent profiles.
 > 
 > **Why ~40% Accuracy?**
-> - **Highly Skewed Dataset**: The primary reason for the limited accuracy is that the underlying dataset is highly skewed and imbalanced across speaker groups. Certain accents have significantly more audio samples than others, causing model bias.
-> - **Multi-Class Complexity**: Random guessing across 10 classes yields a baseline accuracy of only 10%. An accuracy of 40% is 4x higher than random chance.
-> - **Acoustic Overlap**: Non-native English accents often share subtle acoustic and phonetic similarities.
+> - **Dataset Skew & Imbalance**: Audio sample counts vary significantly across regional speaker groups, introducing class bias.
+> - **Multi-Class Baseline**: Baseline random chance for a 10-class problem is 10%. An accuracy of 40% represents a 4x increase over random probability.
+> - **Phonetic Overlap**: Non-native English accents share overlapping spectral centroids and formant characteristics.
 >
-> **Path to Higher Accuracy:**
-> With a balanced, clean, and non-skewed dataset, the classification performance can be significantly improved. Future work includes expanding dataset balance across all regional speaker groups and utilizing deep learning architectures (such as CNNs on Mel-Spectrograms or Wav2Vec 2.0 / Whisper embeddings).
+> **Future Roadmap:**
+> Dataset re-balancing, data augmentation (noise injection & pitch shifting), and deep learning architectures (Mel-Spectrogram CNNs, Wav2Vec 2.0, or Whisper embeddings).
 
 ---
 
@@ -79,7 +88,8 @@
 ┌──────────────────────────────────────────────┐
 │  3. Flask Web Service & Real-Time Inference  │
 │     (backend/app.py)                         │
-│     • Live Web Audio API recording           │
+│     • Live Web Audio PCM WAV recording       │
+│     • Multi-stage audio loader fallback      │
 │     • REST Endpoint POST /predict            │
 │     • Real-time feature calculation & result │
 └──────────────────────────────────────────────┘
@@ -92,7 +102,7 @@
 ```text
 ai-accent-detector/
 ├── backend/
-│   └── app.py                     # Flask REST server & inference endpoints
+│   └── app.py                     # Flask server & safe multi-stage audio processing
 ├── data/
 │   ├── raw/                       # Raw input data references
 │   └── processed/
@@ -105,16 +115,16 @@ ai-accent-detector/
 │       └── evaluate_model.py      # Classifier metric evaluation script
 ├── models/
 │   ├── best_model.joblib          # Trained SVM pipeline model
-│   └── rf_model.joblib            # Trained Random Forest model (comparison)
+│   └── rf_model.joblib            # Trained Random Forest comparison model
 ├── recordings/                    # Audio dataset (.mp3 files)
-├── reports/                       # Training reports & comparison graphics
+├── reports/                       # Training reports & evaluation graphics
 ├── static/
 │   ├── css/
-│   │   └── style.css              # Glassmorphic UI styling
+│   │   └── style.css              # Warm Beige & Rough Moss Green stylesheet
 │   └── js/
-│       └── main.js                # MediaRecorder, visualizer, API logic
+│       └── main.js                # PCM WAV encoding, visualizer, API handlers
 ├── templates/
-│   └── index.html                 # Frontend Web UI
+│   └── index.html                 # Frontend Web Application (Aura - AI)
 ├── reading-passage.txt            # Benchmark speech prompt text
 ├── requirements.txt               # Python package dependencies
 ├── setup_and_train.bat            # Automated 1-click Windows setup script
@@ -126,29 +136,30 @@ ai-accent-detector/
 ## System Requirements & Dependencies
 
 ### Prerequisites
-- **Python**: Version `3.8` to `3.11`
+- **Python**: Version `3.8` to `3.12`
 - **Pip**: Latest version
 - **OS**: Windows, macOS, or Linux
 
 ### Python Dependencies (`requirements.txt`)
 | Package | Description |
 |---|---|
-| `numpy` | High-performance array operations |
+| `numpy` | High-performance numerical and vector operations |
 | `pandas` | CSV parsing and data frame management |
 | `librosa` | Audio signal processing and acoustic feature extraction |
-| `soundfile` | Sound file reading and writing backend |
+| `soundfile` | Audio reading backend |
+| `pydub` | Fallback audio format decoding |
 | `scipy` | Signal processing subroutines |
 | `scikit-learn` | Standard Scaling, SVM model training, and evaluation |
-| `flask` | Lightweight web backend REST framework |
+| `flask` | Lightweight web backend REST server |
 | `flask-cors` | Cross-Origin Resource Sharing handling |
-| `matplotlib` | Plotting evaluation graphs and comparison metrics |
+| `joblib` | Model persistence & serialization |
 
 ---
 
 ## Quick Start & Setup Guide
 
-### Option 1: Automated 1-Click Setup (Windows)
-Run the included batch script in your terminal to set up the environment, extract features, train the model, and launch the web app:
+### Option 1: Automated Setup (Windows)
+Run the included batch script in your terminal:
 
 ```cmd
 .\setup_and_train.bat
@@ -156,7 +167,7 @@ Run the included batch script in your terminal to set up the environment, extrac
 
 ---
 
-### Option 2: Manual Step-by-Step Setup
+### Option 2: Manual Setup
 
 1. **Clone the repository and enter project folder:**
    ```bash
@@ -180,6 +191,7 @@ Run the included batch script in your terminal to set up the environment, extrac
    ```bash
    pip install --upgrade pip
    pip install -r requirements.txt
+   pip install pydub
    ```
 
 4. **Run Feature Extraction:**
@@ -192,50 +204,40 @@ Run the included batch script in your terminal to set up the environment, extrac
    python ml/training/train_model.py
    ```
 
-6. **Evaluate the Model (Optional):**
-   ```bash
-   python ml/training/evaluate_model.py
-   ```
-
-7. **Launch the Web Application:**
+6. **Launch the Web Application:**
    ```bash
    python backend/app.py
    ```
 
-8. **Open in Browser:**
+7. **Open in Browser:**
    Navigate to `http://localhost:5000` in your web browser.
 
 ---
 
-## Detailed Pipeline Explanation
+## Detailed Audio Pipeline & Resiliency
 
-### 1. Acoustic Feature Extraction
-Audio signals are normalized and resampled to **16 kHz**. From each audio file, 94 features are calculated:
-- **MFCC (0-12)**: Mean & standard deviation of 13 Mel-Frequency Cepstral Coefficients (26 features).
-- **Delta MFCC (0-12)**: 1st order derivative (velocity) (26 features).
-- **Delta-2 MFCC (0-12)**: 2nd order derivative (acceleration) (26 features).
-- **Zero Crossing Rate (ZCR)**: Mean & std (2 features).
-- **Spectral Centroid**: Mean & std of center of mass of the spectrum (2 features).
-- **Spectral Contrast (7 bands)**: Mean & std across 6 sub-bands + total (14 features).
-- **Chroma STFT (12 pitch classes)**: Mean & std (2 features summarized/processed).
-- **RMS Energy**: Mean & std of signal energy (2 features).
+### 1. Client-Side PCM WAV Encoding
+Browsers natively record audio in WebM or Ogg format via `MediaRecorder`. AURA - AI decodes recorded audio chunks in `main.js` via the Web Audio API (`AudioContext.decodeAudioData()`) and compiles a 100% compliant **16-bit Mono PCM RIFF `.wav` file** prior to HTTP upload.
 
-### 2. Model Training & Evaluation
-- The extracted feature set is scaled using `StandardScaler`.
-- Training uses an **RBF-kernel Support Vector Classifier (SVC)** with `probability=True` for soft probability outputs.
-- A **Random Forest Classifier** is also trained for model comparison and reporting.
+### 2. Multi-Stage Backend Safe Loader
+In `backend/app.py`, `load_audio_safely()` executes a multi-layered fallback strategy:
+1. `librosa.load()` for native WAV/FLAC files.
+2. `soundfile.read()` for raw soundfile streams.
+3. `pydub.AudioSegment` for compressed WebM, MP3, and M4A uploads.
+4. `ffmpeg` CLI invocation if available on host system PATH.
 
-### 3. Web Application & Inference
-- The browser captures speech via the `MediaRecorder` API as an audio blob.
-- The blob is sent via HTTP `POST` to `/predict`.
-- Flask processes the temporary file with Librosa, extracts the 94-feature vector, and passes it to `best_model.joblib`.
-- Results are returned as JSON containing the **top accent**, **confidence score**, and **probability distribution matrix**.
+### 3. Feature Extraction Vector (94 Dimensions)
+- **MFCCs (13 coefficients)**: Mean & Std (26 features)
+- **Delta MFCCs (13 coefficients)**: Mean & Std (26 features)
+- **Delta-2 MFCCs (13 coefficients)**: Mean & Std (26 features)
+- **Zero Crossing Rate (ZCR)**: Mean & Std (2 features)
+- **Spectral Centroid**: Mean & Std (2 features)
+- **Spectral Contrast (7 bands)**: Mean & Std (14 features)
+- **RMS Energy**: Mean & Std (2 features)
 
 ---
 
 ## Supported Accents
-
-The current model classifies speech into the following accent profiles based on speaker origin and native language:
 
 - American English
 - British English
@@ -247,3 +249,6 @@ The current model classifies speech into the following accent profiles based on 
 - Arabic English
 - Russian English
 - Japanese English
+
+## Screenshot
+<img width="2477" height="1467" alt="image" src="https://github.com/user-attachments/assets/547de62b-eca2-4127-91de-717c2f845b82" />
